@@ -2,6 +2,8 @@
   "name": "dag-checklists-static",
   "dependencies": {
     "d3": "^5.15.0",
+    "golden-layout": "^1.5.9",
+    "jquery": "^3.4.1",
     "less": "^3.11.1",
     "pouchdb": "^7.1.1",
     "uki": "^0.4.5"

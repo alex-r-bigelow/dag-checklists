@@ -6,13 +6,16 @@
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
   <title>dag-checklists</title>
   <!--link rel="shortcut icon" href="img/app_color_small.png"/-->
-  <link rel="stylesheet/less" type="text/css" href="style.less"/>
+  <script type="text/javascript" src="node_modules/jquery/dist/jquery.min.js"></script>
+  <script type="text/javascript" src="/node_modules/d3/dist/d3.min.js"></script>
+  <link rel="stylesheet/less" type="text/css" href="style/style.less"/>
   <script type="text/javascript" src="node_modules/less/dist/less.min.js" data-log-level="1"></script>
+  <script type="text/javascript" src="node_modules/golden-layout/dist/goldenlayout.min.js"></script>
+  <script type="module" src="controller.js"></script>
 </head>
 
 <body>
-  <a href="pages/editor/editor.html">Editor</a>
-  <a href="pages/checklists/checklists.html">Checklists</a>
+  <div id="layoutRoot"></div>
 </body>
 
 </html>
