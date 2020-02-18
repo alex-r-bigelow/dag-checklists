@@ -4,8 +4,8 @@
   "description": "WIP app for guided / visualized checklists",
   "scripts": {
     "build": "docker build . -t alexrbigelow/dag-checklists",
-    "serve": "docker run --rm -p 3000:3000 -p 5984:5984 alexrbigelow/dag-checklists",
-    "debug": "docker run --rm -it -p 3000:3000 -p 5984:5984 -w /dag-checklists --mount type=bind,source=/d/Repositories/dag-checklists,target=/dag-checklists alexrbigelow/dag-checklists /bin/bash"
+    "serve": "docker run --rm -p 3000:3000 -p 5984:5984 alexrbigelow/dag-checklists -e COUCHDB_USER=adminUser -e COUCHDB_PASSWORD=testPassword",
+    "debug": "docker run --rm -it -p 3000:3000 -p 5984:5984 -e COUCHDB_USER=adminUser -e COUCHDB_PASSWORD=testPassword -w /dag-checklists --mount type=bind,source=/d/Repositories/dag-checklists,target=/dag-checklists alexrbigelow/dag-checklists /bin/bash"
   },
   "repository": {
     "type": "git",

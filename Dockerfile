@@ -1,14 +1,16 @@
 FROM apache/couchdb:latest
 
+# Set up couchdb
 USER root
+# COPY couchdb.ini /opt/couchdb/etc/local.d/docker.ini
+EXPOSE 5984
 
 # Install nodejs
 RUN curl -sL https://deb.nodesource.com/setup_13.x | bash
 RUN apt-get update
-RUN apt-get install -y gnupg nodejs
+RUN apt-get install -y gnupg nodejs sudo
 
-EXPOSE 3000
-
+# Set up the express app
 RUN useradd -ms /bin/bash express
 USER express
 WORKDIR /home/express
@@ -17,4 +19,5 @@ COPY package.json ./package.json
 COPY static ./static
 RUN npm install
 
-CMD ["/usr/bin/env", "node", "server.js"]
+USER root
+CMD ["/bin/bash", "docker.sh"]
