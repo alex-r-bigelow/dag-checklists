@@ -6,7 +6,6 @@ WORKDIR /home
 RUN mkdir couchdb
 RUN chown couchdb couchdb
 RUN chgrp couchdb couchdb
-# COPY couchdb.ini /opt/couchdb/etc/local.d/docker.ini
 EXPOSE 5984
 
 # Install nodejs
@@ -23,7 +22,7 @@ COPY package.json ./package.json
 COPY static ./static
 RUN npm install
 
-WORKDIR /
 USER root
-COPY docker.sh ./docker.sh
-CMD ["/bin/bash", "docker.sh"]
+COPY setup_couchdb.sh setup_couchdb.sh
+COPY setup_serve.sh setup_serve.sh
+CMD ["/bin/bash", "setup_serve.sh"]
