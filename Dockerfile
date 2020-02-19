@@ -2,6 +2,10 @@ FROM apache/couchdb:latest
 
 # Set up couchdb
 USER root
+WORKDIR /home
+RUN mkdir couchdb
+RUN chown couchdb couchdb
+RUN chgrp couchdb couchdb
 # COPY couchdb.ini /opt/couchdb/etc/local.d/docker.ini
 EXPOSE 5984
 
@@ -19,5 +23,7 @@ COPY package.json ./package.json
 COPY static ./static
 RUN npm install
 
+WORKDIR /
 USER root
+COPY docker.sh ./docker.sh
 CMD ["/bin/bash", "docker.sh"]
