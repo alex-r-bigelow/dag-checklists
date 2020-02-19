@@ -23,6 +23,6 @@ COPY static ./static
 RUN npm install
 
 USER root
-COPY setup_couchdb.sh setup_couchdb.sh
+COPY setup_couchdb setup_couchdb
 COPY setup_serve.sh setup_serve.sh
 CMD ["/bin/bash", "setup_serve.sh"]

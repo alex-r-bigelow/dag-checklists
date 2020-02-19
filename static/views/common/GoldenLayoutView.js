@@ -33,12 +33,6 @@ class GoldenLayoutView extends IntrospectableMixin(View) {
     this.container.on('resize', () => this.render());
   }
   get title () {
-    if (this.layoutState.label) {
-      if (this.layoutState.comparisonLabel) {
-        return this.layoutState.label + ' / ' + this.layoutState.comparisonLabel;
-      }
-      return this.layoutState.label + ' ' + this.humanReadableType;
-    }
     return this.humanReadableType;
   }
   get isEmpty () {

@@ -20,6 +20,7 @@
   "homepage": "https://github.com/alex-r-bigelow/dag-checklists#readme",
   "dependencies": {
     "add-cors-to-couchdb": "0.0.6",
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "nano": "^8.1.0"
   }
 }

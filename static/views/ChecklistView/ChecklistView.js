@@ -8,6 +8,9 @@ class ChecklistView extends GoldenLayoutView {
     ];
     super(argObj);
   }
+  get title () {
+    return 'Checklist';
+  }
   setup () {
     super.setup();
 

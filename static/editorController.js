@@ -11,7 +11,7 @@ const viewClassLookup = {
 class Controller extends Model {
   constructor () {
     super();
-    this.db = new PouchDB(`http://${window.location.hostname}:5984`);
+    this.setupDatabase();
     this.setupLayout();
     window.onresize = () => { this.renderAllViews(); };
     (async () => {
@@ -21,6 +21,20 @@ class Controller extends Model {
       this.goldenLayout.init();
       this.renderAllViews();
     })();
+  }
+  setupDatabase () {
+    const baseUrl = `http://${window.location.hostname}:5984`;
+    this.tasks = new PouchDB(baseUrl + '/tasks');
+    this.users = new PouchDB(baseUrl + '/_users');
+
+    this.tasks.changes({
+      since: 'now',
+      live: true
+    }).on('change', () => { this.renderAllViews(); });
+    this.users.changes({
+      since: 'now',
+      live: true
+    }).on('change', () => { this.renderAllViews(); });
   }
   setupLayout () {
     this.goldenLayout = new GoldenLayout({

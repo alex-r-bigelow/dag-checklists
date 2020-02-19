@@ -9,6 +9,9 @@ class DagView extends SvgViewMixin(GoldenLayoutView) {
     ];
     super(argObj);
   }
+  get title () {
+    return 'DAG Editor';
+  }
   setup () {
     super.setup();
 
