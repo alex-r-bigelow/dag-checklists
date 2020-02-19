@@ -15,6 +15,9 @@ npm run serve
 
 # Launch the docker image, with its db and server started, as well as give you a `bash` shell inside the container
 npm run debug
+
+# Same as the last one, but uses a different path for those of us using WSL; you'll probably need to tweak the absolute path in package.json for this to work
+npm run debug-wsl
 ```
 
 If you're a hard core docker pro and/or don't happen to have npm installed, see `package.json` for the relevant docker commands.
