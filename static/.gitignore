@@ -30,6 +30,12 @@ node_modules/jquery/*
 node_modules/jquery/dist/*
 !node_modules/jquery/dist/jquery.min.js
 
+!node_modules/pouchdb/
+node_modules/pouchdb/*
+!node_modules/pouchdb/dist/
+node_modules/pouchdb/dist/*
+!node_modules/pouchdb/dist/pouchdb.min.js
+
 !node_modules/golden-layout/
 node_modules/golden-layout/*
 !node_modules/golden-layout/dist/

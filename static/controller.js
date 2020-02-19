@@ -1,4 +1,4 @@
-/* globals d3, less, GoldenLayout */
+/* globals d3, less, PouchDB, GoldenLayout */
 import { Model } from '/node_modules/uki/dist/uki.esm.js';
 import DagView from './views/DagView/DagView.js';
 import ChecklistView from './views/ChecklistView/ChecklistView.js';
@@ -11,6 +11,7 @@ const viewClassLookup = {
 class Controller extends Model {
   constructor () {
     super();
+    this.db = new PouchDB(`http://${window.location.hostname}:5984`);
     this.setupLayout();
     window.onresize = () => { this.renderAllViews(); };
     (async () => {
