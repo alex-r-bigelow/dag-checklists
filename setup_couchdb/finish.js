@@ -1,5 +1,7 @@
 const nano = require('nano')(`http://${process.env.COUCHDB_USER}:${process.env.COUCHDB_PASSWORD}@localhost:5984`);
 
+// TODO: when we're ready to enable user accounts again, uncomment this
+/*
 (async () => {
   const tasks = nano.use('tasks');
   tasks.insert({
@@ -12,3 +14,4 @@ const nano = require('nano')(`http://${process.env.COUCHDB_USER}:${process.env.C
     }
   });
 })();
+*/

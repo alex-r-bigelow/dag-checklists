@@ -21,10 +21,10 @@ class Controller extends Model {
     this.menu = new MenuView();
     this.modal = new ModalView();
     this.tooltip = new TooltipView();
-    this.setupDatabase();
     this.setupLayout();
     window.onresize = () => { this.renderAllViews(); };
     (async () => {
+      await this.setupDatabase();
       await less.pageLoadFinished;
       // Anything that needs to guarantee that LESS has finished should
       // go after this line
@@ -32,19 +32,35 @@ class Controller extends Model {
       this.renderAllViews();
     })();
   }
-  setupDatabase () {
+  async setupDatabase () {
     const baseUrl = `http://${window.location.hostname}:5984`;
     this.tasks = new PouchDB(baseUrl + '/tasks');
-    this.users = new PouchDB(baseUrl + '/_users');
+    const session = await this.tasks.getSession();
+    if (!session) {
+      this.disconnected = true;
+      this.userIsAdmin = false;
+      this.username = null;
+    } else {
+      this.disconnected = false;
+      this.username = session.userCtx.name; // will be null if logged out
+      this.userIsAdmin = session.userCtx.roles.indexOf('_admin') !== -1;
+    }
 
-    this.tasks.changes({
-      since: 'now',
-      live: true
-    }).on('change', () => { this.renderAllViews(); });
-    this.users.changes({
-      since: 'now',
-      live: true
-    }).on('change', () => { this.renderAllViews(); });
+    // TODO: for now, we always log in as the admin
+    if (!this.userIsAdmin) {
+      await this.tasks.logIn('adminUser', 'testPassword');
+      this.username = 'adminUser';
+      this.userIsAdmin = true;
+    }
+
+    if (this.username === null) {
+      this.progress = new PouchDB('progress');
+    } else {
+      this.progress = new PouchDB(baseUrl + '/' + session.userCtx.name);
+    }
+    if (this.userIsAdmin) {
+      // TODO: create a CouchDB view of all of the users' progress
+    }
   }
   setupLayout () {
     this.goldenLayout = new GoldenLayout({
