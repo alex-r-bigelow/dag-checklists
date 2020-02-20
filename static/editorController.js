@@ -35,6 +35,8 @@ class Controller extends Model {
   async setupDatabase () {
     const baseUrl = `http://${window.location.hostname}:5984`;
     this.tasks = new PouchDB(baseUrl + '/tasks');
+
+    // Figure out who the user is / logged in state
     const session = await this.tasks.getSession();
     if (!session) {
       this.disconnected = true;
@@ -46,21 +48,32 @@ class Controller extends Model {
       this.userIsAdmin = session.userCtx.roles.indexOf('_admin') !== -1;
     }
 
-    // TODO: for now, we always log in as the admin
+    // TODO: for now, we always log in as the admin; delete this in the future
     if (!this.userIsAdmin) {
       await this.tasks.logIn('adminUser', 'testPassword');
       this.username = 'adminUser';
       this.userIsAdmin = true;
     }
 
-    if (this.username === null) {
+    // TODO: fix this once we set up the signup process
+    if (true) { // this.username === null) {
       this.progress = new PouchDB('progress');
     } else {
-      this.progress = new PouchDB(baseUrl + '/' + session.userCtx.name);
+      this.progress = new PouchDB(baseUrl + '/' + this.username, { skip_setup: true });
     }
     if (this.userIsAdmin) {
       // TODO: create a CouchDB view of all of the users' progress
     }
+
+    // Listen for changes to our databases, and redraw when they happen
+    this.tasks.changes({
+      since: 'now',
+      live: true
+    }).on('change', () => { this.renderAllViews(); });
+    this.progress.changes({
+      since: 'now',
+      live: true
+    }).on('change', () => { this.renderAllViews(); });
   }
   setupLayout () {
     this.goldenLayout = new GoldenLayout({
