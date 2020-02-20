@@ -25,10 +25,19 @@ pre, code {
   font-weight: @fixedFontWeight;
 }
 
+#background {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  background: @backgroundGradient;
+}
+
 #layoutRoot {
   overflow: hidden;
   position: absolute;
-  top: 0px;
+  top: @menuHeight;
   left: 0px;
   right: 0px;
   bottom: 0px;

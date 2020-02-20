@@ -1,5 +1,12 @@
 /* globals d3, less, PouchDB, GoldenLayout */
 import { Model } from '/node_modules/uki/dist/uki.esm.js';
+
+// General-purpose views
+import TooltipView from './views/TooltipView/TooltipView.js';
+import ModalView from './views/ModalView/ModalView.js';
+import MenuView from './views/MenuView/MenuView.js';
+
+// Main views in the app
 import DagView from './views/DagView/DagView.js';
 import ChecklistView from './views/ChecklistView/ChecklistView.js';
 
@@ -11,6 +18,9 @@ const viewClassLookup = {
 class Controller extends Model {
   constructor () {
     super();
+    this.menu = new MenuView();
+    this.modal = new ModalView();
+    this.tooltip = new TooltipView();
     this.setupDatabase();
     this.setupLayout();
     window.onresize = () => { this.renderAllViews(); };
@@ -68,6 +78,9 @@ class Controller extends Model {
     }
   }
   renderAllViews () {
+    this.menu.render();
+    this.modal.render();
+    this.tooltip.render();
     for (const view of Object.values(this.views)) {
       view.render();
     }

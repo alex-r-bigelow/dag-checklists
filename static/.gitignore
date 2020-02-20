@@ -36,6 +36,12 @@ node_modules/pouchdb/*
 node_modules/pouchdb/dist/*
 !node_modules/pouchdb/dist/pouchdb.min.js
 
+!node_modules/pouchdb-authentication/
+node_modules/pouchdb-authentication/*
+!node_modules/pouchdb-authentication/dist/
+node_modules/pouchdb-authentication/dist/*
+!node_modules/pouchdb-authentication/dist/pouchdb.authentication.min.js
+
 !node_modules/golden-layout/
 node_modules/golden-layout/*
 !node_modules/golden-layout/dist/
