@@ -10,7 +10,6 @@ class DagView extends SvgViewMixin(GoldenLayoutView) {
       { type: 'text', url: '/views/DagView/controls.html' }
     ];
     super(argObj);
-    this.nextTask = 0;
 
     (async () => {
       this.updateGraph();
@@ -37,9 +36,7 @@ class DagView extends SvgViewMixin(GoldenLayoutView) {
     // Attach event listeners
     this.d3el.select('.addNode.button')
       .on('click', async () => {
-        window.controller.tasks.put({
-          _id: `task${this.nextTask}`,
-          taskNumber: this.nextTask,
+        window.controller.tasks.post({
           checklist: [],
           dependencies: {},
           label: 'Untitled task'
@@ -61,14 +58,18 @@ class DagView extends SvgViewMixin(GoldenLayoutView) {
         } else if (window.controller.currentTaskId) {
           (async () => {
             // First delete any references to this node
+            const changedDocs = [];
             for (const targetNode of this.graph.nodes) {
               if (targetNode.doc.dependencies[window.controller.currentTaskId]) {
                 delete targetNode.doc.dependencies[window.controller.currentTaskId];
-                window.controller.tasks.put(targetNode.doc);
+                changedDocs.push(targetNode.doc);
               }
             }
             const sourceDoc = await window.controller.getCurrentTaskDoc();
-            window.controller.tasks.remove(sourceDoc);
+            sourceDoc._deleted = true;
+            changedDocs.push(sourceDoc);
+            window.controller.tasks.bulkDocs(changedDocs);
+            window.controller.currentTaskId = null;
           })();
         }
       });
@@ -106,7 +107,6 @@ class DagView extends SvgViewMixin(GoldenLayoutView) {
     const tasks = await window.controller.tasks
       .allDocs({ include_docs: true });
 
-    this.nextTask = tasks.total_rows + 1;
     // Grab existing nodes' positions, velocities, and fixed states to avoid
     // jitter / interaction oddities
     const nodeLookup = {};
@@ -288,20 +288,24 @@ class DagView extends SvgViewMixin(GoldenLayoutView) {
       }).on('end', d => {
         // Complete the link
         if (this._draggedHandle.targetId !== null) {
+          const changedDocs = [];
           // If the reverse link already existed, remove it
           const targetDoc = this.graph.nodes[this._draggedHandle.targetIndex].doc;
           if (targetDoc.dependencies[this._draggedHandle.sourceId]) {
             delete targetDoc.dependencies[this._draggedHandle.sourceId];
-            window.controller.tasks.put(targetDoc);
+            changedDocs.push(targetDoc);
           }
           // Create the new link
           const sourceDoc = this.graph.nodes[this._draggedHandle.sourceIndex].doc;
           sourceDoc.dependencies[this._draggedHandle.targetId] = true;
-          window.controller.tasks.put(sourceDoc);
+          changedDocs.push(sourceDoc);
+          window.controller.tasks.bulkDocs(changedDocs);
+          this.render();
+        } else {
+          this.fastDraw(nodes, edges, handles);
         }
         delete this._draggedHandle;
         handles.style('pointer-events', null);
-        this.fastDraw(nodes, edges, handles);
       }));
 
     this.simulation.on('tick', () => {
