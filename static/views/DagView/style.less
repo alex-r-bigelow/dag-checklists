@@ -13,4 +13,62 @@
       margin-right: 1em;
     }
   }
+  svg {
+    /*
+      TODO: d3 is still working on dragging touch issues, as the ways that
+      browsers prevent default actions (e.g. scrolling, zooming) aren't
+      consistent yet. Need to watch this space:
+      https://github.com/d3/d3-drag/issues/9
+    */
+    touch-action: none;
+
+    .node {
+      cursor: pointer;
+      &:active {
+        cursor: grabbing;
+      }
+      text {
+        display: none;
+      }
+      &:hover text {
+        display: inherit;
+      }
+      circle {
+        fill: white;
+        stroke: @textColor;
+        stroke-width: 1;
+      }
+      &.selected,
+      &.targeted {
+        circle {
+          stroke: @selectionColor;
+          stroke-width: 3;
+        }
+        text {
+          display: inherit;
+        }
+      }
+    }
+    .handleEdge {
+      fill: none;
+      stroke: @textColor;
+      stroke-width: 1;
+    }
+    .edge path {
+      cursor: pointer;
+      fill: none;
+      &.hoverTarget {
+        stroke: transparent;
+        stroke-width: 6;
+      }
+      &.visible {
+        stroke: @textColor;
+        stroke-width: 1;
+      }
+    }
+    .edge.selected path.visible {
+      stroke: @selectionColor;
+      stroke-width: 3;
+    }
+  }
 }

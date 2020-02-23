@@ -22,7 +22,10 @@ class Controller extends Model {
     this.modal = new ModalView();
     this.tooltip = new TooltipView();
     this.setupLayout();
-    window.onresize = () => { this.renderAllViews(); };
+    window.onresize = () => {
+      this.goldenLayout.updateSize();
+      this.renderAllViews();
+    };
     (async () => {
       await this.setupDatabase();
       await less.pageLoadFinished;
@@ -113,6 +116,13 @@ class Controller extends Model {
     for (const view of Object.values(this.views)) {
       view.render();
     }
+  }
+  get currentTaskId () {
+    return this._currentTaskId || null;
+  }
+  set currentTaskId (taskId) {
+    this._currentTaskId = taskId;
+    this.trigger('currentTaskChanged');
   }
 }
 

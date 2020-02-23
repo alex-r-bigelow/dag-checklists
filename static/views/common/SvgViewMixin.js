@@ -8,6 +8,7 @@ const SvgViewMixin = function (superclass) {
         type: 'less', url: '/views/common/SvgViewMixin.less'
       });
       super(argObj);
+      this._previousBounds = { width: 0, height: 0 };
     }
     setupContentElement () {
       return this.d3el.append('svg');
@@ -21,6 +22,11 @@ const SvgViewMixin = function (superclass) {
       super.draw();
 
       const bounds = this.getAvailableSpace();
+      if (this._previousBounds.width !== bounds.width ||
+          this._previousBounds.height !== bounds.height) {
+        this.trigger('svgResized');
+      }
+      this._previousBounds = bounds;
       this.content
         .attr('width', bounds.width)
         .attr('height', bounds.height);
