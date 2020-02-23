@@ -48,9 +48,28 @@ class DagView extends SvgViewMixin(GoldenLayoutView) {
     this.d3el.select('.delete.button')
       .on('click', () => {
         if (this._selectedEdge) {
-          console.log('todo: delete', this._selectedEdge);
+          const parsedChunks = /([^-]*)->(.*)/.exec(this._selectedEdge);
+          if (parsedChunks === null) {
+            console.warn('bad edge id: ' + this._selectedEdge);
+            return;
+          }
+          const sourceId = parsedChunks[1];
+          const targetId = parsedChunks[2];
+          const sourceDoc = this.graph.nodes.find(d => d.id === sourceId).doc;
+          delete sourceDoc.dependencies[targetId];
+          window.controller.tasks.put(sourceDoc);
         } else if (window.controller.currentTaskId) {
-          console.log('todo: delete', window.controller.currentTaskId);
+          (async () => {
+            // First delete any references to this node
+            for (const targetNode of this.graph.nodes) {
+              if (targetNode.doc.dependencies[window.controller.currentTaskId]) {
+                delete targetNode.doc.dependencies[window.controller.currentTaskId];
+                window.controller.tasks.put(targetNode.doc);
+              }
+            }
+            const sourceDoc = await window.controller.getCurrentTaskDoc();
+            window.controller.tasks.remove(sourceDoc);
+          })();
         }
       });
 

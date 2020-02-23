@@ -124,6 +124,13 @@ class Controller extends Model {
     this._currentTaskId = taskId;
     this.trigger('currentTaskChanged');
   }
+  async getCurrentTaskDoc () {
+    if (this._currentTaskId) {
+      return this.tasks.get(this.currentTaskId);
+    } else {
+      return null;
+    }
+  }
 }
 
 window.controller = new Controller();
