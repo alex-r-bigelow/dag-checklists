@@ -36,11 +36,12 @@ class DagView extends SvgViewMixin(GoldenLayoutView) {
     // Attach event listeners
     this.d3el.select('.addNode.button')
       .on('click', async () => {
-        window.controller.tasks.post({
+        await window.controller.tasks.post({
           checklist: [],
           dependencies: {},
           label: 'Untitled task'
         });
+        this.restartSimulation();
       });
     this.d3el.select('.delete.button')
       .on('click', () => {
@@ -229,41 +230,58 @@ class DagView extends SvgViewMixin(GoldenLayoutView) {
 
     handlesEnter.append('circle')
       .attr('r', DagView.HANDLE_RADIUS);
+    handlesEnter.append('path')
+      .attr('d', `\
+M${-DagView.HANDLE_RADIUS},0\
+L${DagView.HANDLE_RADIUS},0\
+L0,${-DagView.HANDLE_RADIUS}\
+L${DagView.HANDLE_RADIUS},0\
+L0,${DagView.HANDLE_RADIUS}`);
 
-    nodes
-      .on('mouseenter', (d, i) => {
-        if (this._draggedHandle) {
-          this._draggedHandle.targetId = d.id;
-          this._draggedHandle.targetIndex = i;
-          this.fastDraw(nodes, edges, handles);
+    let dropTargets = this.d3el.select('.dropTargetsLayer')
+      .selectAll('.dropTarget').data(this.graph.nodes);
+    dropTargets.exit().remove();
+    const dropTargetsEnter = dropTargets.enter().append('g')
+      .classed('dropTarget', true)
+      .style('pointer-events', 'none');
+    dropTargets = dropTargets.merge(dropTargetsEnter);
+
+    dropTargetsEnter.append('circle')
+      .attr('r', DagView.NODE_RADIUS);
+
+    dropTargets.on('mouseenter', (d, i) => {
+      if (this._draggedHandle) {
+        this._draggedHandle.targetId = d.id;
+        this._draggedHandle.targetIndex = i;
+        this.fastDraw(nodes, edges, handles, dropTargets);
+      }
+    }).on('mouseleave', () => {
+      if (this._draggedHandle) {
+        this._draggedHandle.targetId = null;
+        this._draggedHandle.targetIndex = null;
+        this.fastDraw(nodes, edges, handles, dropTargets);
+      }
+    });
+
+    nodes.call(d3.drag()
+      .on('start', d => {
+        if (!d3.event.active) {
+          this.simulation.alphaTarget(0.3).restart();
+          d.fx = d.x;
+          d.fy = d.y;
+          window.controller.currentTaskId = d.id;
+          this._selectedEdge = null;
         }
-      })
-      .on('mouseleave', () => {
-        if (this._draggedHandle) {
-          this._draggedHandle.targetId = null;
-          this._draggedHandle.targetIndex = null;
-          this.fastDraw(nodes, edges, handles);
+      }).on('drag', d => {
+        d.fx = d3.event.x;
+        d.fy = d3.event.y;
+      }).on('end', d => {
+        if (!d3.event.active) {
+          this.simulation.alphaTarget(0);
         }
-      })
-      .call(d3.drag()
-        .on('start', d => {
-          if (!d3.event.active) {
-            this.simulation.alphaTarget(0.3).restart();
-            d.fx = d.x;
-            d.fy = d.y;
-            window.controller.currentTaskId = d.id;
-            this._selectedEdge = null;
-          }
-        }).on('drag', d => {
-          d.fx = d3.event.x;
-          d.fy = d3.event.y;
-        }).on('end', d => {
-          if (!d3.event.active) {
-            this.simulation.alphaTarget(0);
-          }
-          d.fx = null;
-          d.fy = null;
-        }));
+        d.fx = null;
+        d.fy = null;
+      }));
 
     handles.call(d3.drag()
       .on('start', (d, i) => {
@@ -272,20 +290,21 @@ class DagView extends SvgViewMixin(GoldenLayoutView) {
           sourceIndex: i,
           targetId: null,
           targetIndex: null,
-          x: d.x + DagView.NODE_RADIUS,
+          x: d.x + DagView.NODE_RADIUS + DagView.HANDLE_RADIUS,
           y: d.y
         };
         window.controller.currentTaskId = d.id;
-        this.fastDraw(nodes, edges, handles);
-        // For drag + drop to work, we temporarily need to turn off pointer-events
-        handles.style('pointer-events', 'none');
+        dropTargets.style('pointer-events', null);
+        this.fastDraw(nodes, edges, handles, dropTargets);
       }).on('drag', d => {
-        this._draggedHandle.x = d3.event.x + DagView.NODE_RADIUS;
+        this._draggedHandle.x = d3.event.x + DagView.NODE_RADIUS + DagView.HANDLE_RADIUS;
         this._draggedHandle.y = d3.event.y;
-        this.fastDraw(nodes, edges, handles);
+        this.fastDraw(nodes, edges, handles, dropTargets);
       }).on('end', d => {
         // Complete the link
-        if (this._draggedHandle.targetId !== null) {
+        const connect = this._draggedHandle.targetId !== null &&
+          this._draggedHandle.targetId !== this._draggedHandle.sourceId;
+        if (connect) {
           const changedDocs = [];
           // If the reverse link already existed, remove it
           const targetDoc = this.graph.nodes[this._draggedHandle.targetIndex].doc;
@@ -298,19 +317,21 @@ class DagView extends SvgViewMixin(GoldenLayoutView) {
           sourceDoc.dependencies[this._draggedHandle.targetId] = true;
           changedDocs.push(sourceDoc);
           window.controller.tasks.bulkDocs(changedDocs);
-          this.render();
-        } else {
-          this.fastDraw(nodes, edges, handles);
         }
         delete this._draggedHandle;
-        handles.style('pointer-events', null);
+        dropTargets.style('pointer-events', 'none');
+        this.fastDraw(nodes, edges, handles, dropTargets);
+        if (connect) {
+          this.render();
+        }
       }));
 
     this.simulation.on('tick', () => {
-      this.fastDraw(nodes, edges, handles);
+      this.fastDraw(nodes, edges, handles, dropTargets);
     });
+    this.fastDraw(nodes, edges, handles, dropTargets);
   }
-  fastDraw (nodes, edges, handles) {
+  fastDraw (nodes, edges, handles, dropTargets) {
     // This function isn't part of the regular uki render -> setup / draw pattern;
     // instead, it gets called frequently by the force-directed simulation, as well
     // as interactions that only require minor UI changes
@@ -318,11 +339,12 @@ class DagView extends SvgViewMixin(GoldenLayoutView) {
     edges.select('.visible').attr('d', d => { return this.computeEdge(d); });
     nodes.attr('transform', d => `translate(${d.x},${d.y})`)
       .classed('targeted', d => this._draggedHandle && this._draggedHandle.targetId === d.id);
+    dropTargets.attr('transform', d => `translate(${d.x},${d.y})`);
     handles.attr('transform', d => {
       if (this._draggedHandle && this._draggedHandle.sourceId === d.id) {
         return `translate(${this._draggedHandle.x},${this._draggedHandle.y})`;
       } else {
-        return `translate(${d.x + DagView.NODE_RADIUS},${d.y})`;
+        return `translate(${d.x + DagView.NODE_RADIUS + DagView.HANDLE_RADIUS},${d.y})`;
       }
     });
     let handleEdgePath = null;
@@ -403,6 +425,6 @@ class DagView extends SvgViewMixin(GoldenLayoutView) {
     }
   }
 }
-DagView.NODE_RADIUS = 14;
-DagView.HANDLE_RADIUS = 7;
+DagView.NODE_RADIUS = 20;
+DagView.HANDLE_RADIUS = 10;
 export default DagView;
