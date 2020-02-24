@@ -89,9 +89,7 @@ class DagView extends SvgViewMixin(GoldenLayoutView) {
     super.draw();
 
     if (this.isHidden || this.isLoading) {
-      return; // eslint-disable-line no-useless-return
-    } else {
-      // TODO
+      return;
     }
 
     this.drawControls();
