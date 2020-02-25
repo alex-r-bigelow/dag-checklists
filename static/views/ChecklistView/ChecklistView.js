@@ -23,6 +23,15 @@ class ChecklistView extends GoldenLayoutView {
 
     this.emptyStateDiv.text('No task selected');
 
+    this.d3el.select('.addItem.button')
+      .on('click', async () => {
+        const currentTaskDoc = await window.controller.getCurrentTaskDoc();
+        if (currentTaskDoc) {
+          currentTaskDoc.checklist.push('Action item');
+          window.controller.tasks.put(currentTaskDoc);
+        }
+      });
+
     window.controller.on('currentTaskChanged', () => {
       this.render();
     });
@@ -35,10 +44,16 @@ class ChecklistView extends GoldenLayoutView {
     } else if (this.isEmpty) {
       this.d3el.select('.title').text('');
       this.d3el.select('.items').html('');
-      return;
+    } else {
+      this.updateContents();
     }
-
-    this.updateContents();
+    this.drawControls();
+  }
+  drawControls () {
+    this.d3el.select('.controls .addItem')
+      .classed('disabled', !window.controller.currentTaskId);
+    this.d3el.select('.controls .delete')
+      .classed('disabled', !this._selectedItem);
   }
   async updateContents () {
     let currentTaskDoc = await window.controller.getCurrentTaskDoc();
@@ -54,15 +69,15 @@ class ChecklistView extends GoldenLayoutView {
           this.blur();
         }
       }).on('blur', async function () {
+        currentTaskDoc = await window.controller.getCurrentTaskDoc();
         if (this.contentChanged) {
           currentTaskDoc.label = title.text();
           await window.controller.tasks.put(currentTaskDoc);
-          currentTaskDoc = await window.controller.getCurrentTaskDoc();
         }
       });
 
     let items = this.d3el.select('.items')
-      .selectAll('item').data(currentTaskDoc.checklist);
+      .selectAll('.item').data(currentTaskDoc.checklist, (d, i) => i);
     items.exit().remove();
     const itemsEnter = items.enter().append('li')
       .classed('item', true);
@@ -73,8 +88,24 @@ class ChecklistView extends GoldenLayoutView {
       .attr('type', 'checkbox');
     itemsEnter.append('label')
       .attr('for', (d, i) => `item${i}`)
-      .attr('contenteditable', window.controller.userIsAdmin ? 'true' : null)
-      .html(d => d);
+      .attr('contenteditable', window.controller.userIsAdmin ? 'true' : null);
+    items.select('label')
+      .html(d => d)
+      .on('input', function () {
+        this.contentChanged = true;
+        if (d3.event.inputType === 'insertParagraph') {
+          // Save the changes on a regular Enter keystroke, but
+          // ignore it / allow a newline if Shift+Enter is pressed
+          this.blur();
+        }
+      })
+      .on('blur', async function (d, i) {
+        currentTaskDoc = await window.controller.getCurrentTaskDoc();
+        if (this.contentChanged) {
+          currentTaskDoc.checklist[i] = this.innerHTML;
+          await window.controller.tasks.put(currentTaskDoc);
+        }
+      });
   }
 }
 export default ChecklistView;
