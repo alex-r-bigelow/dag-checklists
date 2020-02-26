@@ -91,11 +91,11 @@ class Controller extends Model {
         isCloseable: false,
         content: [{
           type: 'component',
-          componentName: 'ChecklistView',
+          componentName: 'DagView',
           componentState: {}
         }, {
           type: 'component',
-          componentName: 'DagView',
+          componentName: 'ChecklistView',
           componentState: {}
         }]
       }]
