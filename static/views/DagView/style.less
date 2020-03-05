@@ -1,0 +1,103 @@
+@import '../../style/colors.less';
+
+.DagView {
+  .controls {
+    font-size: 0.75em;
+    position: absolute;
+    right: 0em;
+    bottom: 1em;
+    left: 0em;
+    display: flex;
+    justify-content: flex-end;
+    .button {
+      margin-right: 1em;
+    }
+  }
+  svg {
+    /*
+      TODO: d3 is still working on dragging touch issues, as the ways that
+      browsers prevent default actions (e.g. scrolling, zooming) aren't
+      consistent yet. Need to watch this space:
+      https://github.com/d3/d3-drag/issues/9
+    */
+    touch-action: none;
+
+    .node {
+      cursor: grab;
+      &:active {
+        cursor: grabbing;
+      }
+      text {
+        display: none;
+      }
+      circle {
+        fill: @invertedTextColor;
+        stroke: @shadowColor;
+        stroke-width: 2;
+      }
+      &:hover {
+        text {
+          display: inherit;
+        }
+        circle {
+          fill: @separatorColor;
+        }
+      }
+      &.selected,
+      &.targeted {
+        circle {
+          stroke: @selectionColor;
+          stroke-width: 5;
+        }
+        text {
+          display: inherit;
+        }
+      }
+    }
+    .dropTarget {
+      fill: transparent;
+    }
+    .handleEdge {
+      fill: none;
+      stroke: @shadowColor;
+      stroke-width: 2;
+    }
+    .handle {
+      cursor: grab;
+      circle {
+        fill: transparent;
+        stroke: none;
+      }
+      path {
+        fill: none;
+        stroke: @shadowColor;
+        stroke-width: 2;
+      }
+      &:hover {
+        circle {
+          stroke: @shadowColor;
+          stroke-width: 2;
+        }
+        path {
+          stroke: none;
+        }
+      }
+    }
+    .edge path {
+      cursor: pointer;
+      fill: none;
+      &.hoverTarget {
+        stroke: transparent;
+        stroke-width: 8;
+      }
+      &.visible {
+        stroke: @shadowColor;
+        stroke-width: 2;
+      }
+    }
+    .edge.selected path.visible {
+      stroke: @selectionColor;
+      stroke-width: 5;
+    }
+  }
+}
