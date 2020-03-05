@@ -1,6 +1,13 @@
 @import '../../style/colors.less';
 
 .ChecklistView {
+  .background {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+  }
   .controls {
     font-size: 0.75em;
     position: absolute;
@@ -11,6 +18,13 @@
     justify-content: flex-end;
     .button {
       margin-right: 1em;
+    }
+  }
+  ul {
+    list-style: none;
+    padding: 0 1em;
+    li.selected {
+      box-shadow: 0 0 0 2px @shadowColor;
     }
   }
 }

@@ -39,7 +39,8 @@ class DagView extends SvgViewMixin(GoldenLayoutView) {
         await window.controller.tasks.post({
           checklist: [],
           dependencies: {},
-          label: 'Untitled task'
+          label: 'Untitled task',
+          description: 'Description'
         });
         this.restartSimulation();
       });

@@ -1,6 +1,8 @@
 # dag-checklists
 WIP app for guided / visualized checklists
 
+![example screenshot](https://github.com/alex-r-bigelow/dag-checklists/raw/master/docs/2020-03-05-screenshot.png)
+
 # Setup
 Base prerequisite: you'll need to have docker installed.
 
